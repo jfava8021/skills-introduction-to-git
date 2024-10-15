@@ -1,6 +1,4 @@
 //find a way to clean up the terminal when the user selects a new option
-// setprecision() for setting decimals in balance  (I'm not doing something correctly)
-
 
 #include <iostream>
 #include <array>

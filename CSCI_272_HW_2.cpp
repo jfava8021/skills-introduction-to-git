@@ -1,4 +1,4 @@
-//find a way to clean up the terminal when the user selects a new option
+//classes go into header files for extra credit
 
 #include <iostream>
 #include <array>
@@ -64,7 +64,6 @@ class BankAccount
          void set_balance(double bal) {balance = bal;}//setter
 };
 
-
 void menu();
 int read_accts(vector<BankAccount> &accounts);
 int new_acct(vector<BankAccount> &accounts);
@@ -81,9 +80,6 @@ bool social_security_number_exists(const vector<BankAccount> &accounts, int ssn)
 int find_social_security_number_index(const vector<BankAccount> &accounts, int ssn);
 int find_account_index(const vector<BankAccount> &accounts, int account_number);//findacct function
 
-
-
-
 int main()
 {
     cout << fixed << setprecision(2);
@@ -99,6 +95,7 @@ int main()
 
         cout << "Please enter your selection here: ";
         cin >> teller_selection;
+        cout << "\n" << endl;
 
         switch(teller_selection) 
         {
@@ -124,6 +121,7 @@ int main()
                 break;
             case 'Q':
                 cout << "You have selected Quit." << endl;
+                print_accts(accounts);
                 return 0;
             case 'X':
                 cout << "You have selected Delete Account." << endl;
@@ -141,6 +139,7 @@ int main()
 
 void menu()
 {
+    cout << "\n" << endl;
     cout << "Hello, and welcome to the Fake Bank Inc teller system! Please make a selection from the following options." << endl;
     cout << "(W) Withdrawl" << endl;
     cout << "(D) Deposit" << endl;
@@ -173,7 +172,6 @@ void print_accts(const vector<BankAccount> &accounts)
         string censored_ssn = censor + ssn_last_four;
         cout << setw(15) << accounts[i].get_account_number() << setw(15) << accounts[i].get_depositor().get_name().get_first_name() << setw(15) << accounts[i].get_depositor().get_name().get_last_name() << setw(15) << censored_ssn << setw(15) << accounts[i].get_balance() << endl;
     }
-    cout << "\n" << endl;
 }
 
 int new_acct(vector<BankAccount> &accounts)
@@ -188,8 +186,8 @@ int new_acct(vector<BankAccount> &accounts)
     cin >> create_account_number;
     if (account_exists(accounts, create_account_number))
     {
-        cout << "Account number already exists. Please try again." << endl;
-        return new_acct(accounts);
+        cout << "Account Number already exists. Please select a new Account Number and try again." << "\n" << endl;
+        return -1;
     }
     //continue with account creation
     cout << "Please enter the first name: ";
@@ -214,6 +212,7 @@ int new_acct(vector<BankAccount> &accounts)
         accounts.push_back(BankAccount(Depositor(Name(create_first_name, create_last_name), create_ssn), create_account_number, create_balance));
         cout << "Account created successfully." << endl;
         return accounts.size(); // account creation successful print words
+        
     }
     else
     {
@@ -222,63 +221,51 @@ int new_acct(vector<BankAccount> &accounts)
     }
 }
 
-int balance_entry_attempt = 1;//SHOULD I RELOCATE THIS VARIABLE ELSEWHERE FOR CLARITY?
 void balance(vector<BankAccount> &accounts)
 {
     int account_number;
     cout << "Please enter the account number: ";
     cin >> account_number;
-    if (balance_entry_attempt >= 3)//Make sure user doesn't get stuck in balance function
-    {
-        cout << "Too many failed attempts. Please try again later." << endl;
-        return;
-    }
     if (!account_exists(accounts, account_number))
     {
         cout << "This account does not exist. Please try again." << endl;
-        balance_entry_attempt++;
-        return balance(accounts);
+        return;
     }
     else
     {
         int account_number_index = find_account_index(accounts, account_number);
-        balance_entry_attempt = 1;
         cout << "Account number: " << account_number << " has a balance of: $" << accounts[account_number_index].get_balance() << endl;
     }
 }
 
-int withdrawl_entry_attempt = 1;//SHOULD I RELOCATE THIS VARIABLE ELSEWHERE FOR CLARITY?
 void withdrawl(vector<BankAccount> &accounts)
 
 {
     int account_number;
     cout << "Please enter the account number: ";
     cin >> account_number;
-    if (withdrawl_entry_attempt >= 3)//Make sure user doesn't get stuck in withdrawl function
-    {
-        cout << "Too many failed attempts. Please try again later." << endl;
-        return;
-    }
     if (!account_exists(accounts, account_number))
     {
-    cout << "Account number does not exist. Please try again." << endl;
-    cout << withdrawl_entry_attempt << endl;
-    withdrawl_entry_attempt++;
-    return withdrawl(accounts);
+    cout << "Account number does not exist. Please verify account number and try again." << endl;
+    return;
     }
     else
     {
-        withdrawl_entry_attempt = 1;
-        cout << "Please enter the amount to withdraw: ";
+        cout << "Please enter the amount to withdraw: $";
         double withdrawl_amount;
         cin >> withdrawl_amount;
 
         int account_number_index = find_account_index(accounts, account_number);
        
-        if (withdrawl_amount > accounts[account_number_index].get_balance())
+        if (withdrawl_amount < 0)
         {
-            cout << "Insufficient funds. Please try again." << endl;
-            return withdrawl(accounts);
+            cout << "Invalid withdrawl amount. Please try again." << endl;
+            return;
+        }
+        else if (withdrawl_amount > accounts[account_number_index].get_balance())
+        {
+            cout << "Insufficient funds. Please check balance and try again." << endl;
+            return;
         }
         else
         {
@@ -289,31 +276,26 @@ void withdrawl(vector<BankAccount> &accounts)
     }
 }
 
-int deposit_entry_attempt = 1;//SHOULD I RELOCATE THIS VARIABLE ELSEWHERE FOR CLARITY?
 void deposit(vector<BankAccount> &accounts)
 {
     int account_number;
     cout << "Please enter the account number: ";
     cin >> account_number;
-    if (deposit_entry_attempt >= 3)//Make sure user doesn't get stuck in deposit function
-    {
-        cout << "Too many failed attempts. Please try again later." << endl;
-        return;
-    }
     if (!account_exists(accounts, account_number))
     {
-        cout << "Account number does not exist. Please try again." << endl;
-        deposit_entry_attempt++;
-        return deposit(accounts);
+        cout << "Account number does not exist. Please verify Account Number and try again." << endl;
+        return;
+    }
+    double deposit_amount;
+    cout << "Please enter the amount to deposit: $";
+    cin >> deposit_amount;
+    if (deposit_amount < 0)
+    {
+        cout << "Invalid deposit amount. Please try again." << endl;
+        return;
     }
     else
     {
-        deposit_entry_attempt = 1;
-        cout << "Please enter the amount to deposit: ";
-        double deposit_amount;
-        cin >> deposit_amount;
-
-        // Find the account with the matching account number
         int account_index_number = find_account_index(accounts, account_number);
         accounts[account_index_number].set_balance(accounts[account_index_number].get_balance() + deposit_amount);
         cout << "Deposit successful. New balance: $" << accounts[account_index_number].get_balance() << endl;
@@ -321,27 +303,19 @@ void deposit(vector<BankAccount> &accounts)
     }
 }
 
-int account_deletion_attempt = 1;//SHOULD I RELOCATE THIS VARIABLE ELSEWHERE FOR CLARITY?
 int delete_account(vector<BankAccount> &accounts)
 {   
     char delete_verification;
     int account_number;
-    int account_number_index = find_account_index(accounts, account_number);
     cout << "Please enter the account number you would like to delete: ";
     cin >> account_number;
-    if (account_deletion_attempt >= 3)//Make sure user doesn't get stuck in delete function
-    {
-        cout << "Too many failed attempts. Please try again later." << endl;
-        return -1;
-    }
     if (!account_exists(accounts, account_number))
     {
-        cout << "Account number does not exist. Please verify the account number and try again." << endl;
-        return delete_account(accounts);
+        cout << "Account Number does not exist. Please verify the Account Number and try again." << endl;
+        return -1;
     }
     else
     {
-        account_deletion_attempt = 1;
         if (has_balance(accounts, account_number))//account still has balance
         {
             cout << "Account number " << account_number << " has a remaining balance. Please withdraw all funds before deleting the account." << endl;
@@ -349,7 +323,8 @@ int delete_account(vector<BankAccount> &accounts)
         }
         else
         {
-            cout << "Account number" << account_number << " is associated with the following account: " << endl;
+            int account_number_index = find_account_index(accounts, account_number);
+            cout << "Account Number " << account_number << " is associated with the following account: " << endl;
             cout << "First Name: " << accounts[account_number_index].get_depositor().get_name().get_first_name() << endl;
             cout << "Last Name: " << accounts[account_number_index].get_depositor().get_name().get_last_name() << endl;
             cout << "Remaining Balance: " << accounts[account_number_index].get_balance() << endl;
@@ -370,23 +345,16 @@ int delete_account(vector<BankAccount> &accounts)
     } 
 }
 
-int account_info_attempt = 1;//SHOULD I RELOCATE THIS VARIABLE ELSEWHERE FOR CLARITY?
 void account_info(vector<BankAccount> &accounts)
 {
     int ssn;
     cout << "Please enter the social security number: ";
     cin >> ssn;
-    if (account_info_attempt >= 3)//Make sure user doesn't get stuck in account_info function
-    {
-        cout << "Too many failed attempts. Please try again later." << endl;
-        return;
-    }
     if (social_security_number_exists(accounts, ssn))
     {
         string ssn_string = to_string(ssn);
         string ssn_last_four = ssn_string.substr(ssn_string.length() - 4);
         int ssn_index = find_social_security_number_index(accounts, ssn);
-        account_info_attempt = 1;
         string censor = "***-**-";
         string censored_ssn = censor + ssn_last_four;
 
@@ -398,11 +366,10 @@ void account_info(vector<BankAccount> &accounts)
     }
     else
     {
-        cout << "Account not found. Please try again." << endl;
-        account_info_attempt++;
+        cout << "Account not found. Please check SSN and try again." << endl;
+        return;
     }
 }
-
 
 //Support Functions
 bool account_exists(const vector<BankAccount> &accounts, int account_number)//support function
